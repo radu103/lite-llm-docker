@@ -51,11 +51,13 @@ services:
     restart: always
     ports:
       - 3000:8080
+      - 11434:11434
     networks:
       default:
         ipv4_address: 172.100.0.5
     environment:
       HF_HUB_OFFLINE: 1
+      OLLAMA_HOST: 0.0.0.0
 
 networks:
   default:
