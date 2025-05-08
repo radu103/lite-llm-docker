@@ -4,7 +4,6 @@ name: litellm-docker
 services:
   postgres:
     image: postgres
-    restart: always
     ports:
       - 5432:5432
     environment:
@@ -27,7 +26,6 @@ services:
 
   lite-llm:
     image: ghcr.io/berriai/litellm:main-latest
-    restart: always
     networks:
       default:
         ipv4_address: 172.100.0.4
@@ -48,7 +46,6 @@ services:
     depends_on:
       - lite-llm  
     image: ghcr.io/open-webui/open-webui:ollama
-    restart: always
     ports:
       - 3000:8080
       - 11434:11434
@@ -63,6 +60,21 @@ services:
     volumes:
       - ollama:/root/.ollama
 
+  n8n:
+    image: n8nio/n8n
+    ports:
+      - 5678:5678
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_HOST: 172.100.0.2
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_USER: postgres
+      DB_POSTGRESDB_SCHEMA: public
+      DB_POSTGRESDB_PASSWORD: postgres
+    volumes:
+      - n8n_data:/home/node/.n8n
+
 networks:
   default:
     ipam:
@@ -73,3 +85,4 @@ networks:
 volumes:
   pgdata:
   ollama:
+  n8n_data:
