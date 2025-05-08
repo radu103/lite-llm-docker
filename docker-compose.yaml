@@ -58,6 +58,10 @@ services:
     environment:
       HF_HUB_OFFLINE: 1
       OLLAMA_HOST: 0.0.0.0
+      STORE_MODEL_IN_DB: true
+      STORE_PROMPTS_IN_SPEND_LOGS: true
+    volumes:
+      - ollama:/root/.ollama
 
 networks:
   default:
@@ -68,3 +72,4 @@ networks:
 
 volumes:
   pgdata:
+  ollama:
