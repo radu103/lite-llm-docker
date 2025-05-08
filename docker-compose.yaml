@@ -43,11 +43,26 @@ services:
       STORE_MODEL_IN_DB: True
       UI_USERNAME: admin
       UI_PASSWORD: LiteLLM
+
+  open-webui-with-ollama:
+    depends_on:
+      - lite-llm  
+    image: ghcr.io/open-webui/open-webui:ollama
+    restart: always
+    ports:
+      - 3000:8080
+    networks:
+      default:
+        ipv4_address: 172.100.0.5
+    environment:
+      HF_HUB_OFFLINE: 1
+
 networks:
   default:
     ipam:
       driver: default
       config:
         - subnet: 172.100.0.0/24
+
 volumes:
   pgdata:
