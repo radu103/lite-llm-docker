@@ -43,8 +43,6 @@ services:
       UI_PASSWORD: LiteLLM
 
   open-webui-with-ollama:
-    depends_on:
-      - lite-llm  
     image: ghcr.io/open-webui/open-webui:ollama
     ports:
       - 3000:8080
@@ -53,13 +51,12 @@ services:
       default:
         ipv4_address: 172.100.0.5
     environment:
-      HF_HUB_OFFLINE: 1
       OLLAMA_HOST: 0.0.0.0
       STORE_MODEL_IN_DB: true
       STORE_PROMPTS_IN_SPEND_LOGS: true
     volumes:
       - ollama:/root/.ollama
-      - own_docs:/app/backend/open-webui/data/docs
+      - open_webui_data_uploads:/app/backend/data/uploads
 
   n8n:
     image: n8nio/n8n
@@ -98,9 +95,9 @@ volumes:
   pgdata:
   ollama:
   n8n_data:
-  own_docs:
+  open_webui_data_uploads:
     driver: local
     driver_opts:
       type: none
-      device: E:/ollama/docs
+      device: E:/ollama/data
       o: bind
