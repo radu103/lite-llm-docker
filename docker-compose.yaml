@@ -128,8 +128,8 @@ services:
       OLLAMA_MODEL_TOKEN_LIMIT: 8192
       VECTOR_DB : chroma
       CHROMA_ENDPOINT: http://172.100.0.8:8000
-      CHROMA_API_HEADER: X-Api-Key
-      CHROMA_API_KEY: sk-123abc
+      CHROMA_API_HEADER: x-chroma-token
+      CHROMA_API_KEY: x-chroma-token
     command: --cap-add SYS_ADMIN
     volumes:
       - anything_llm_storage:/app/server/storage
