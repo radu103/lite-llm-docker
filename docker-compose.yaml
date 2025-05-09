@@ -42,21 +42,17 @@ services:
       UI_USERNAME: admin
       UI_PASSWORD: LiteLLM
 
-  open-webui-with-ollama:
-    image: ghcr.io/open-webui/open-webui:ollama
+  ollama:
+    image: ollama/ollama
     ports:
-      - 3000:8080
       - 11434:11434
     networks:
       default:
         ipv4_address: 172.100.0.5
     environment:
       OLLAMA_HOST: 0.0.0.0
-      STORE_MODEL_IN_DB: true
-      STORE_PROMPTS_IN_SPEND_LOGS: true
     volumes:
       - ollama:/root/.ollama
-      - open_webui_data_uploads:/app/backend/data/uploads
 
   n8n:
     image: n8nio/n8n
