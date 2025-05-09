@@ -2,6 +2,8 @@
 name: litellm-docker
 
 services:
+
+  # PostgreSQL database
   postgres:
     image: postgres
     ports:
@@ -13,24 +15,32 @@ services:
       - pgdata:/var/lib/postgresql/data 
     networks:
       default:
-        ipv4_address: 172.100.0.2      
+        ipv4_address: 172.100.0.2
  
-  adminer:
-    image: adminer
-    restart: always
+  # PgAdmin4 for PostgreSQL management
+  pgadmin4:
+    depends_on:
+      - postgres
+    image: dpage/pgadmin4:9.3.0
     ports:
-      - 54321:8080
+      - 54321:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@pgadmin4.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    volumes:
+      - pgadmin4:/var/lib/pgadmin
     networks:
       default:
         ipv4_address: 172.100.0.3
 
+  # LiteLLM proxy server for AI model serving
   lite-llm:
+    depends_on:
+      - postgres
     image: ghcr.io/berriai/litellm:main-latest
     networks:
       default:
         ipv4_address: 172.100.0.4
-    depends_on:
-      - postgres
     ports:
       - 4000:4000
     environment:
@@ -42,6 +52,7 @@ services:
       UI_USERNAME: admin
       UI_PASSWORD: LiteLLM
 
+  # Ollama for model serving
   ollama:
     restart: always
     image: ollama/ollama
@@ -55,7 +66,10 @@ services:
     volumes:
       - ollama:/root/.ollama
 
+  # n8n for workflow automation
   n8n:
+    depends_on:
+      - postgres
     image: n8nio/n8n
     ports:
       - 5678:5678
@@ -73,6 +87,7 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
 
+  # Docling for document processing
   docling:
     image: quay.io/docling-project/docling-serve
     ports:
@@ -81,6 +96,21 @@ services:
       default:
         ipv4_address: 172.100.0.7
 
+  # ChromaDB for vector database
+  chromadb:
+    image: chromadb/chroma:1.0.9.dev38
+    ports:
+      - 8000:8000
+    environment:
+      IS_PERSISTENT: true
+      ANONYMIZED_TELEMETRY: true
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      default:
+        ipv4_address: 172.100.0.8
+
+  # AnythingLLM for Workspaces and LLM RAG with own documents
   anything-llm:
     image: mintplexlabs/anythingllm
     ports:
@@ -94,10 +124,10 @@ services:
       EMBEDDING_MODEL_MAX_CHUNK_LENGTH: 8192
       LLM_PROVIDER: ollama
       OLLAMA_BASE_PATH: http://host.docker.internal:11434
-      OLLAMA_MODEL_PREF: phi4:14b
+      OLLAMA_MODEL_PREF: gemma3:4b
       OLLAMA_MODEL_TOKEN_LIMIT: 8192
       VECTOR_DB : chroma
-      CHROMA_ENDPOINT: http://172.100.0.9:8000
+      CHROMA_ENDPOINT: http://172.100.0.8:8000
       CHROMA_API_HEADER: X-Api-Key
       CHROMA_API_KEY: sk-123abc
     command: --cap-add SYS_ADMIN
@@ -105,20 +135,7 @@ services:
       - anything_llm_storage:/app/server/storage
     networks:
       default:
-        ipv4_address: 172.100.0.8
-
-  chromadb:
-    image: chromadb/chroma:1.0.9.dev38
-    ports:
-      - 8000:8000
-    environment:
-      IS_PERSISTENT: true
-      ANONYMIZED_TELEMETRY: true
-    volumes:
-      - chroma_data:/chroma/chroma
-    networks:
-      default:
-        ipv4_address: 172.100.0.9      
+        ipv4_address: 172.100.0.9
 
 networks:
   default:
@@ -129,6 +146,7 @@ networks:
 
 volumes:
   pgdata:
+  pgadmin4:
   ollama:
   n8n_data:
   chroma_data:
