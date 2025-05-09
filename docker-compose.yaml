@@ -84,6 +84,45 @@ services:
       default:
         ipv4_address: 172.100.0.7
 
+  anything-llm:
+    image: mintplexlabs/anythingllm
+    ports:
+      - 3001:3001
+    environment:
+      STORAGE_DIR: /app/server/storage
+      STORAGE_LOCATION: /app/server/storage
+      EMBEDDING_ENGINE: ollama
+      EMBEDDING_BASE_PATH: http://host.docker.internal:11434
+      EMBEDDING_MODEL_PREF: nomic-embed-text:latest
+      EMBEDDING_MODEL_MAX_CHUNK_LENGTH: 8192
+      LLM_PROVIDER: ollama
+      OLLAMA_BASE_PATH: http://host.docker.internal:11434
+      OLLAMA_MODEL_PREF: llama4:scout
+      OLLAMA_MODEL_TOKEN_LIMIT: 8192
+      VECTOR_DB : chroma
+      CHROMA_ENDPOINT: http://172.100.0.9:8000
+      CHROMA_API_HEADER: X-Api-Key
+      CHROMA_API_KEY: sk-123abc
+    command: --cap-add SYS_ADMIN
+    volumes:
+      - anything_llm_storage:/app/server/storage
+    networks:
+      default:
+        ipv4_address: 172.100.0.8
+
+  chromadb:
+    image: chromadb/chroma:1.0.9.dev38
+    ports:
+      - 8000:8000
+    environment:
+      IS_PERSISTENT: true
+      ANONYMIZED_TELEMETRY: true
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      default:
+        ipv4_address: 172.100.0.9      
+
 networks:
   default:
     ipam:
@@ -95,6 +134,13 @@ volumes:
   pgdata:
   ollama:
   n8n_data:
+  chroma_data:
+  anything_llm_storage:
+      driver: local
+      driver_opts:
+        type: none
+        device: E:/anythingllm-storage
+        o: bind
   open_webui_data_uploads:
     driver: local
     driver_opts:
