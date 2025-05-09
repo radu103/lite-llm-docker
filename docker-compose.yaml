@@ -126,8 +126,9 @@ services:
       EMBEDDING_MODEL_MAX_CHUNK_LENGTH: 8192
       LLM_PROVIDER: ollama
       OLLAMA_BASE_PATH: http://host.docker.internal:11434
-      OLLAMA_MODEL_PREF: gemma3:4b
-      OLLAMA_MODEL_TOKEN_LIMIT: 8192
+      OLLAMA_KEEP_ALIVE_TIMEOUT: 1200
+      OLLAMA_MODEL_PREF: mistral-large:123b
+      OLLAMA_MODEL_TOKEN_LIMIT: 131072
       VECTOR_DB : chroma
       CHROMA_ENDPOINT: http://172.100.0.8:8000
       CHROMA_API_HEADER: x-chroma-token
