@@ -59,11 +59,15 @@ services:
       STORE_PROMPTS_IN_SPEND_LOGS: true
     volumes:
       - ollama:/root/.ollama
+      - own_docs:/app/backend/open-webui/data/docs
 
   n8n:
     image: n8nio/n8n
     ports:
       - 5678:5678
+    networks:
+      default:
+        ipv4_address: 172.100.0.6      
     environment:
       DB_TYPE: postgresdb
       DB_POSTGRESDB_DATABASE: n8n
@@ -74,6 +78,14 @@ services:
       DB_POSTGRESDB_PASSWORD: postgres
     volumes:
       - n8n_data:/home/node/.n8n
+
+  docling:
+    image: quay.io/docling-project/docling-serve
+    ports:
+      - 5001:5001
+    networks:
+      default:
+        ipv4_address: 172.100.0.7
 
 networks:
   default:
@@ -86,3 +98,9 @@ volumes:
   pgdata:
   ollama:
   n8n_data:
+  own_docs:
+    driver: local
+    driver_opts:
+      type: none
+      device: E:/ollama/docs
+      o: bind
