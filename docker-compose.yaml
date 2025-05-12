@@ -65,6 +65,13 @@ services:
       OLLAMA_HOST: 0.0.0.0
     volumes:
       - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]      
 
   # n8n for workflow automation
   n8n:
@@ -126,8 +133,8 @@ services:
       EMBEDDING_MODEL_MAX_CHUNK_LENGTH: 8192
       LLM_PROVIDER: ollama
       OLLAMA_BASE_PATH: http://host.docker.internal:11434
-      OLLAMA_MODEL_PREF: mistral-large:123b
-      OLLAMA_MODEL_TOKEN_LIMIT: 131072
+      OLLAMA_MODEL_PREF: phi4:14b
+      OLLAMA_MODEL_TOKEN_LIMIT: 16184
       VECTOR_DB : chroma
       CHROMA_ENDPOINT: http://172.100.0.8:8000
       CHROMA_API_HEADER: x-chroma-token
