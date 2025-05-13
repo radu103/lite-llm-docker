@@ -163,13 +163,6 @@ services:
     networks:
       default:
         ipv4_address: 172.100.0.10
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]            
 
 networks:
   default:
