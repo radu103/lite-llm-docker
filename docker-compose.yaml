@@ -146,6 +146,31 @@ services:
       default:
         ipv4_address: 172.100.0.9
 
+  faster-whisper:
+    image: lscr.io/linuxserver/faster-whisper:latest
+    container_name: faster-whisper
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+      - WHISPER_MODEL=large-v3-turbo
+      - WHISPER_BEAM=1 #optional
+      - WHISPER_LANG=ro #optional
+    volumes:
+      - faster_whisper__storage:/config
+    ports:
+      - 10300:10300
+    networks:
+      default:
+        ipv4_address: 172.100.0.10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]            
+
 networks:
   default:
     ipam:
@@ -164,6 +189,12 @@ volumes:
       driver_opts:
         type: none
         device: E:/anythingllm-storage
+        o: bind  
+  faster_whisper__storage:
+      driver: local
+      driver_opts:
+        type: none
+        device: E:/faster-whisper-storage
         o: bind
   open_webui_data_uploads:
     driver: local
