@@ -147,17 +147,19 @@ services:
         ipv4_address: 172.100.0.9
 
   faster-whisper:
-    image: lscr.io/linuxserver/faster-whisper:latest
-    container_name: faster-whisper
+    image: radu103/ubuntu-faster-whisper:latest
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
       - WHISPER_MODEL=large-v3-turbo
-      - WHISPER_BEAM=1 #optional
+      - WHISPER_BEAM=5 #optional, default is 5
       - WHISPER_LANG=ro #optional
     volumes:
-      - faster_whisper__storage:/config
+      - faster_whisper_code:/app/code
+      - faster_whisper_audio:/app/audio
+      - faster_whisper_output:/app/output
+      - faster_whisper_storage:/root/.cache
     ports:
       - 10300:10300
     networks:
@@ -182,16 +184,28 @@ volumes:
       driver_opts:
         type: none
         device: E:/anythingllm-storage
-        o: bind  
-  faster_whisper__storage:
+        o: bind
+  faster_whisper_code:
+      driver: local
+      driver_opts:
+        type: none
+        device: E:/faster-whisper-code
+        o: bind
+  faster_whisper_audio:
+      driver: local
+      driver_opts:
+        type: none
+        device: E:/faster-whisper-audio
+        o: bind
+  faster_whisper_output:
+      driver: local
+      driver_opts:
+        type: none
+        device: E:/faster-whisper-output
+        o: bind
+  faster_whisper_storage:
       driver: local
       driver_opts:
         type: none
         device: E:/faster-whisper-storage
         o: bind
-  open_webui_data_uploads:
-    driver: local
-    driver_opts:
-      type: none
-      device: E:/ollama/data
-      o: bind
