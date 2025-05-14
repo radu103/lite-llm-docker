@@ -147,14 +147,14 @@ services:
         ipv4_address: 172.100.0.9
 
   faster-whisper:
-    image: radu103/ubuntu-faster-whisper:latest
+    image: lscr.io/linuxserver/faster-whisper:latest
     environment:
       - PUID=1000
       - PGID=1000
-      - TZ=Etc/UTC
+      - TZ=Europe/Bucharest
       - WHISPER_MODEL=large-v3-turbo
-      - WHISPER_BEAM=5 #optional, default is 5
-      - WHISPER_LANG=ro #optional
+      - WHISPER_BEAM=5                #optional, default is 5
+      - WHISPER_LANG=ro               #optional
     volumes:
       - faster_whisper_code:/app/code
       - faster_whisper_audio:/app/audio
@@ -165,6 +165,13 @@ services:
     networks:
       default:
         ipv4_address: 172.100.0.10
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
 
 networks:
   default:
