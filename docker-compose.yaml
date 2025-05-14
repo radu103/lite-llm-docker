@@ -153,7 +153,7 @@ services:
       - PGID=1000
       - TZ=Europe/Bucharest
       - WHISPER_MODEL=large-v3-turbo
-      - WHISPER_BEAM=5                #optional, default is 5
+      - WHISPER_BEAM=10               #optional, default is 5
       - WHISPER_LANG=ro               #optional
     volumes:
       - faster_whisper_code:/app/code
@@ -165,13 +165,13 @@ services:
     networks:
       default:
         ipv4_address: 172.100.0.10
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
 
 networks:
   default:
