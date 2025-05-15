@@ -146,8 +146,8 @@ services:
       default:
         ipv4_address: 172.100.0.9
 
-  faster-whisper:
-    image: lscr.io/linuxserver/faster-whisper:latest
+  ubuntu-faster-whisper:
+    image: radu103/ubuntu-faster-whisper:latest
     environment:
       - PUID=1000
       - PGID=1000
@@ -156,12 +156,11 @@ services:
       - WHISPER_BEAM=10               #optional, default is 5
       - WHISPER_LANG=ro               #optional
     volumes:
-      - faster_whisper_code:/app/code
       - faster_whisper_audio:/app/audio
       - faster_whisper_output:/app/output
       - faster_whisper_storage:/root/.cache
     ports:
-      - 10300:10300
+      - 10301:10301
     networks:
       default:
         ipv4_address: 172.100.0.10
