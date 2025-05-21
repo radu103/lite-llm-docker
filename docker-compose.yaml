@@ -82,8 +82,8 @@ services:
       - 1880:1880
     volumes:
       - node_red_data:/data
-      - faster_whisper_audio:/data/audio
-      - faster_whisper_output:/data/output
+      - node_red_audio:/data/unsorted
+      - faster_whisper_output:/app/output
 
   # Docling for document processing
   docling:
@@ -209,6 +209,12 @@ volumes:
       type: none
       device: R:/lite-llm-docker/node_red_data
       o: bind
+  node_red_audio:
+    driver: local
+    driver_opts:
+      type: none
+      device: R:/lite-llm-docker/node_red_audio
+      o: bind      
   chroma_data:
     driver: local
     driver_opts:
