@@ -6,6 +6,9 @@ services:
   # PostgreSQL database
   postgres:
     image: postgres
+    networks:
+      default:
+        ipv4_address: 172.101.0.2  
     ports:
       - 5432:5432
     environment:
@@ -13,15 +16,15 @@ services:
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data 
-    networks:
-      default:
-        ipv4_address: 172.101.0.2
  
   # PgAdmin4 for PostgreSQL management
   pgadmin4:
     depends_on:
       - postgres
     image: dpage/pgadmin4:9.3.0
+    networks:
+      default:
+        ipv4_address: 172.101.0.3    
     ports:
       - 54321:80
     environment:
@@ -29,9 +32,6 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     volumes:
       - pgadmin4:/var/lib/pgadmin
-    networks:
-      default:
-        ipv4_address: 172.101.0.3
 
   # LiteLLM proxy server for AI model serving
   lite-llm:
@@ -53,61 +53,55 @@ services:
       UI_PASSWORD: LiteLLM
 
   # Ollama for model serving
-  ollama:
-    restart: always
-    image: ollama/ollama
-    ports:
-      - 11434:11434
+  ollama-auth:
+    image: radu103/ollama-auth:latest
     networks:
       default:
-        ipv4_address: 172.101.0.5
+        ipv4_address: 172.101.0.5  
+    ports:
+      - "11435:80"
     environment:
-      OLLAMA_HOST: 0.0.0.0
+      - OLLAMA_API_KEY=ea8fbe0097004010dd91a7baa8f60f23f3a239000f5aabc7b85c7d31c5b06b75
     volumes:
-      - ollama:/root/.ollama
+      - ollama_models:/root/.ollama
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]      
+              capabilities: [gpu, compute, utility]
 
   # n8n for workflow automation
-  n8n:
-    depends_on:
-      - postgres
-    image: n8nio/n8n
-    ports:
-      - 5678:5678
+  node-red:
+    image: nodered/node-red
     networks:
       default:
-        ipv4_address: 172.101.0.6      
-    environment:
-      DB_TYPE: postgresdb
-      DB_POSTGRESDB_DATABASE: n8n
-      DB_POSTGRESDB_HOST: 172.101.0.2
-      DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_USER: postgres
-      DB_POSTGRESDB_SCHEMA: public
-      DB_POSTGRESDB_PASSWORD: postgres
+        ipv4_address: 172.101.0.6    
+    ports:
+      - 1880:1880
     volumes:
-      - n8n_data:/home/node/.n8n
+      - node_red_data:/data
+      - faster_whisper_audio:/data/audio
+      - faster_whisper_output:/data/output
 
   # Docling for document processing
   docling:
     image: quay.io/docling-project/docling-serve
+    networks:
+      default:
+        ipv4_address: 172.101.0.7    
     ports:
       - 5001:5001
     environment:
       DOCLING_SERVE_ENABLE_UI: true
-    networks:
-      default:
-        ipv4_address: 172.101.0.7
 
   # ChromaDB for vector database
   chromadb:
     image: chromadb/chroma:1.0.9.dev38
+    networks:
+      default:
+        ipv4_address: 172.101.0.8    
     ports:
       - 8000:8000
     environment:
@@ -115,13 +109,16 @@ services:
       ANONYMIZED_TELEMETRY: true
     volumes:
       - chroma_data:/chroma/chroma
-    networks:
-      default:
-        ipv4_address: 172.101.0.8
 
   # AnythingLLM for Workspaces and LLM RAG with own documents
   anything-llm:
+    depends_on:
+      - postgres
+      - chromadb
     image: mintplexlabs/anythingllm
+    networks:
+      default:
+        ipv4_address: 172.101.0.9    
     ports:
       - 3001:3001
     environment:
@@ -142,12 +139,16 @@ services:
     command: --cap-add SYS_ADMIN
     volumes:
       - anything_llm_storage:/app/server/storage
-    networks:
-      default:
-        ipv4_address: 172.101.0.9
 
   ubuntu-faster-whisper:
+    depends_on:
+      - postgres
     image: radu103/ubuntu-faster-whisper:latest
+    networks:
+      default:
+        ipv4_address: 172.101.0.10
+    ports:
+      - 10301:10301    
     environment:
       - PUID=1000
       - PGID=1000
@@ -167,11 +168,7 @@ services:
       - faster_whisper_audio:/app/audio
       - faster_whisper_output:/app/output
       - faster_whisper_storage:/root/.cache
-    ports:
-      - 10301:10301
-    networks:
-      default:
-        ipv4_address: 172.101.0.10
+
     # deploy:
     #   resources:
     #     reservations:
@@ -199,18 +196,18 @@ volumes:
     driver_opts:
       type: none
       device: R:/lite-llm-docker/pgadmin4
-      o: bind
-  ollama:
+      o: bind   
+  ollama_models:
     driver: local
     driver_opts:
       type: none
       device: R:/lite-llm-docker/ollama
       o: bind
-  n8n_data:
+  node_red_data:
     driver: local
     driver_opts:
       type: none
-      device: R:/lite-llm-docker/n8n_data
+      device: R:/lite-llm-docker/node_red_data
       o: bind
   chroma_data:
     driver: local
