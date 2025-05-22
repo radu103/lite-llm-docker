@@ -13,4 +13,5 @@ node-red-contrib-axios
 node-red-contrib-fs-ops
 node-red-contrib-postgresql
 node-red-contrib-watchdirectory-recursive
+node-red-contrib-function-npm
 ```

@@ -86,7 +86,8 @@ services:
       - node_red_imported_audio:/data/imported_audio
       - node_red_unsorted_doc:/data/unsorted_doc
       - node_red_imported_doc:/data/imported_doc
-      - faster_whisper_output:/app/output
+      - faster_whisper_output:/data/output_audio
+      - docling_output:/data/output_doc
 
   # Docling for document processing
   docling:
@@ -265,4 +266,10 @@ volumes:
     driver_opts:
       type: none
       device: R:/lite-llm-docker/faster_whisper_storage
+      o: bind
+  docling_output:
+    driver: local
+    driver_opts:
+      type: none
+      device: R:/lite-llm-docker/docling_output
       o: bind
