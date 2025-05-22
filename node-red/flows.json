@@ -1,0 +1,268 @@
+[
+    {
+        "id": "f6f2187d.f17ca8",
+        "type": "tab",
+        "label": "Unsorted 2 Whisper",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "a45cedffe9f343a9",
+        "type": "axios-endpoint",
+        "name": "faster-whisper",
+        "baseURL": "http://172.101.0.10:10301",
+        "caCertPath": "",
+        "rejectUnauthorized": true,
+        "proxyEnabled": false,
+        "proxyProtocol": "https",
+        "proxyHost": "",
+        "proxyPort": ""
+    },
+    {
+        "id": "4e764b56e9aa1931",
+        "type": "global-config",
+        "name": "global-config",
+        "env": []
+    },
+    {
+        "id": "ba6dc87add56feb2",
+        "type": "watch-directory",
+        "z": "f6f2187d.f17ca8",
+        "folder": "/data/unsorted",
+        "recursive": "2",
+        "typeEvent": "create",
+        "ignoreInitial": false,
+        "ignoredFiles": "",
+        "ignoredFilesType": "re",
+        "name": "",
+        "x": 150,
+        "y": 380,
+        "wires": [
+            [
+                "606a9537666a7bae"
+            ]
+        ]
+    },
+    {
+        "id": "914658e37ade9b2b",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "formdata",
+        "func": "let fileName = msg.payload;\nconsole.log(fileName);\n\nmsg.payload = new FormData();\nmsg.payload.append(\"file\", fs.createReadStream(fileName));\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "FormData",
+                "module": "form-data"
+            },
+            {
+                "var": "fs",
+                "module": "fs"
+            }
+        ],
+        "x": 620,
+        "y": 380,
+        "wires": [
+            [
+                "8a0901ed49f5f4e0"
+            ]
+        ]
+    },
+    {
+        "id": "2c5c5c7acb03b403",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "whisper response",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1580,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "8a0901ed49f5f4e0",
+        "type": "axios-request",
+        "z": "f6f2187d.f17ca8",
+        "name": "",
+        "endpoint": "a45cedffe9f343a9",
+        "method": "post",
+        "url": "/upload",
+        "responseType": "json",
+        "keepAlive": false,
+        "timeout": 30000,
+        "validateStatus": false,
+        "headers": [
+            {
+                "keyType": "str",
+                "keyValue": "Accept",
+                "valueType": "str",
+                "valueValue": "application/json"
+            },
+            {
+                "keyType": "str",
+                "keyValue": "X-API-Key",
+                "valueType": "str",
+                "valueValue": "8c0b1f2a-3d4e-4b5f-8c7d-9a2e6f3b5c1e"
+            }
+        ],
+        "params": [],
+        "x": 820,
+        "y": 380,
+        "wires": [
+            [
+                "2c5c5c7acb03b403",
+                "8d46890a3d21ac11",
+                "a06f31aeb7d2a472"
+            ]
+        ]
+    },
+    {
+        "id": "8d46890a3d21ac11",
+        "type": "switch",
+        "z": "f6f2187d.f17ca8",
+        "name": "delete file switch",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            },
+            {
+                "t": "else"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 1040,
+        "y": 260,
+        "wires": [
+            [
+                "84ccb4931b3d1107"
+            ],
+            [
+                "a0cae2586e3c1070"
+            ]
+        ]
+    },
+    {
+        "id": "84ccb4931b3d1107",
+        "type": "fs-ops-delete",
+        "z": "f6f2187d.f17ca8",
+        "name": "delete original audio",
+        "path": "filedir",
+        "pathType": "msg",
+        "filename": "file",
+        "filenameType": "msg",
+        "x": 1300,
+        "y": 220,
+        "wires": [
+            [
+                "7c8dd6431f95d951"
+            ]
+        ]
+    },
+    {
+        "id": "606a9537666a7bae",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "audio file extensions",
+        "func": "if(msg.payload.includes('mp3'))\n    return msg;\nelse if(msg.payload.includes('mp4'))\n    return msg;\nelse if(msg.payload.includes('wav'))\n    return msg;\nelse\n    return '';",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 380,
+        "wires": [
+            [
+                "914658e37ade9b2b"
+            ]
+        ]
+    },
+    {
+        "id": "7c8dd6431f95d951",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "delete result",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1560,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "0d194ba23fc413f0",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "error",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1540,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "a0cae2586e3c1070",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "upload failed",
+        "func": "msg.payload = \"File not deleted as Whisper upload failed\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1270,
+        "y": 320,
+        "wires": [
+            [
+                "0d194ba23fc413f0"
+            ]
+        ]
+    },
+    {
+        "id": "a06f31aeb7d2a472",
+        "type": "debug",
+        "z": "f6f2187d.f17ca8",
+        "name": "whisper job_id",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "payload.job_id",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1570,
+        "y": 460,
+        "wires": []
+    }
+]
