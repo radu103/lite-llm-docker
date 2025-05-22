@@ -74,6 +74,9 @@ services:
 
   # n8n for workflow automation
   node-red:
+    depends_on:
+      - docling
+      - ubuntu-faster-whisper
     image: nodered/node-red
     networks:
       default:
@@ -99,6 +102,7 @@ services:
       - 5001:5001
     environment:
       DOCLING_SERVE_ENABLE_UI: true
+      DOCLING_SERVE_MAX_SYNC_WAIT: 600
 
   # ChromaDB for vector database
   chromadb:

@@ -64,7 +64,7 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1580,
+        "x": 1660,
         "y": 380,
         "wires": []
     },
@@ -99,9 +99,7 @@
         "y": 380,
         "wires": [
             [
-                "2c5c5c7acb03b403",
-                "8d46890a3d21ac11",
-                "a06f31aeb7d2a472"
+                "f52a97677c2f0ce3"
             ]
         ]
     },
@@ -125,8 +123,8 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 1040,
-        "y": 260,
+        "x": 1200,
+        "y": 240,
         "wires": [
             [
                 "c7f2c4604982813b"
@@ -169,7 +167,7 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1570,
+        "x": 1670,
         "y": 220,
         "wires": []
     },
@@ -186,7 +184,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1540,
+        "x": 1700,
         "y": 320,
         "wires": []
     },
@@ -202,7 +200,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1290,
+        "x": 1450,
         "y": 320,
         "wires": [
             [
@@ -223,7 +221,7 @@
         "targetType": "msg",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1570,
+        "x": 1670,
         "y": 460,
         "wires": []
     },
@@ -241,7 +239,7 @@
         "destFilename": "file",
         "destFilenameType": "msg",
         "link": false,
-        "x": 1300,
+        "x": 1420,
         "y": 220,
         "wires": [
             [
@@ -275,6 +273,32 @@
         "wires": [
             [
                 "8a0901ed49f5f4e0"
+            ]
+        ]
+    },
+    {
+        "id": "f52a97677c2f0ce3",
+        "type": "function",
+        "z": "f6f2187d.f17ca8",
+        "name": "split",
+        "func": "let msg2 = RED.util.cloneMessage(msg); \nlet msg3 = RED.util.cloneMessage(msg); \nreturn [msg, msg2, msg3];",
+        "outputs": 3,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 380,
+        "wires": [
+            [
+                "8d46890a3d21ac11"
+            ],
+            [
+                "2c5c5c7acb03b403"
+            ],
+            [
+                "a06f31aeb7d2a472"
             ]
         ]
     },
@@ -330,8 +354,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 990,
-        "y": 400,
+        "x": 1130,
+        "y": 460,
         "wires": []
     },
     {
@@ -339,7 +363,7 @@
         "type": "function",
         "z": "39e13ee1d7a019f5",
         "name": "process with docling",
-        "func": "let fileName = msg.payload;\nconsole.log(fileName);\n\nlet formData = {\n  \"files\": fs.createReadStream(fileName),\n  \"do_ocr\" : \"true\",\n  \"force_ocr\": \"true\",\n  \"ocr_engine\": 'easyocr',\n  \"image_export_mode\": 'referenced',\n  \"ocr_lang\": 'ro'\n}\n\nrequest.post({\n    url:'http://172.101.0.7:5001/v1alpha/convert/file',\n    timeout: 300000,\n    formData: formData\n}, \n  function(err, httpResponse, body) {\n  if (err) {\n    console.error('Upload failed:', err);\n    msg.payload = err;\n    return msg;\n  }\n  msg.payload = JSON.parse(body);\n  return msg;\n});",
+        "func": "let fileName = msg.payload;\n\nconst directory = path.dirname(fileName);\nconst filename = path.basename(fileName);\n\nlet formData = {\n  \"files\": fs.createReadStream(fileName),\n  \"do_ocr\" : \"true\",\n  \"force_ocr\": \"true\",\n  \"ocr_engine\": 'easyocr',\n  \"image_export_mode\": 'referenced',\n  \"ocr_lang\": 'ro'\n}\n\nrequest.post({\n    url:'http://172.101.0.7:5001/v1alpha/convert/file',\n    timeout: 300000,\n    formData: formData\n}, \n  function(err, httpResponse, body) {\n    if (err) {\n      console.log('Upload failed:', err);\n      msg.payload = err;\n      return msg;\n    }\n\n    let bodyJson = JSON.parse(body);\n    bodyJson.document.md_content = body;\n    \n    let document = bodyJson.document;\n    document.body = body;\n\n    console.log(\"File : \" + directory + \"/\" + filename);\n    console.log(\"Processing time : \" + bodyJson.processing_time + \" seconds\");\n\n    document.filedir = directory;\n    document.file = filename;\n    msg.payload = document;\n    \n    //console.log(msg);\n    return msg;\n});",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -357,14 +381,17 @@
             {
                 "var": "request",
                 "module": "request"
+            },
+            {
+                "var": "path",
+                "module": "path"
             }
         ],
         "x": 720,
         "y": 280,
         "wires": [
             [
-                "82765761c13db77b",
-                "61becdb2fe918b45"
+                "2bdb0f409a88fcc3"
             ]
         ]
     },
@@ -372,12 +399,14 @@
         "id": "61becdb2fe918b45",
         "type": "switch",
         "z": "39e13ee1d7a019f5",
-        "name": "check for task_id",
-        "property": "payload.task_id",
+        "name": "check for md_content",
+        "property": "size",
         "propertyType": "msg",
         "rules": [
             {
-                "t": "nnull"
+                "t": "gt",
+                "v": "100",
+                "vt": "str"
             },
             {
                 "t": "else"
@@ -386,11 +415,11 @@
         "checkall": "true",
         "repair": false,
         "outputs": 2,
-        "x": 990,
-        "y": 280,
+        "x": 1120,
+        "y": 240,
         "wires": [
             [
-                "752004da9982962d"
+                "89e3ef50f5fdda70"
             ],
             [
                 "8c45269522ba7fa6"
@@ -409,7 +438,7 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1230,
+        "x": 1350,
         "y": 340,
         "wires": [
             [
@@ -426,11 +455,11 @@
         "tosidebar": true,
         "console": true,
         "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
+        "complete": "true",
+        "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1440,
+        "x": 1840,
         "y": 340,
         "wires": []
     },
@@ -438,32 +467,38 @@
         "id": "067c95262b6e67d9",
         "type": "debug",
         "z": "39e13ee1d7a019f5",
-        "name": "debug 1",
+        "name": "wriite md result",
         "active": true,
         "tosidebar": true,
         "console": true,
         "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
+        "complete": "true",
+        "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 1670,
-        "y": 180,
+        "x": 1810,
+        "y": 240,
         "wires": []
     },
     {
-        "id": "2a3df261a88a833c",
-        "type": "file",
+        "id": "752004da9982962d",
+        "type": "function",
         "z": "39e13ee1d7a019f5",
-        "name": "write md",
-        "filename": "/data/docling_output",
-        "filenameType": "str",
-        "appendNewline": true,
-        "createDir": true,
-        "overwriteFile": "true",
-        "encoding": "none",
-        "x": 1460,
-        "y": 180,
+        "name": "extract md_output",
+        "func": "\nlet fileName = msg.payload.filedir + \"/\" + msg.payload.file;\n\nfs.writeFileSync(fileName, msg.payload.body);\nconsole.log('File written successfully : ' + fileName);\n\nreturn msg.payload.body;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [
+            {
+                "var": "fs",
+                "module": "fs"
+            }
+        ],
+        "x": 1550,
+        "y": 240,
         "wires": [
             [
                 "067c95262b6e67d9"
@@ -471,22 +506,87 @@
         ]
     },
     {
-        "id": "752004da9982962d",
+        "id": "716e58c1ed178191",
+        "type": "fs-ops-move",
+        "z": "39e13ee1d7a019f5",
+        "name": "move file to imported",
+        "sourcePath": "filedir",
+        "sourcePathType": "msg",
+        "sourceFilename": "file",
+        "sourceFilenameType": "msg",
+        "destPath": "/data/imported_doc",
+        "destPathType": "str",
+        "destFilename": "file",
+        "destFilenameType": "msg",
+        "link": false,
+        "x": 1540,
+        "y": 140,
+        "wires": [
+            [
+                "ce302cb65bc79079"
+            ]
+        ]
+    },
+    {
+        "id": "ce302cb65bc79079",
+        "type": "debug",
+        "z": "39e13ee1d7a019f5",
+        "name": "move file result",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1810,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "89e3ef50f5fdda70",
         "type": "function",
         "z": "39e13ee1d7a019f5",
-        "name": "extract md_output",
-        "func": "return msg.payload.md_output;",
-        "outputs": 1,
+        "name": "split",
+        "func": "let msg2 = RED.util.cloneMessage(msg); \nreturn [msg, msg2];",
+        "outputs": 2,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 1250,
+        "x": 1330,
         "y": 180,
         "wires": [
             [
-                "2a3df261a88a833c"
+                "716e58c1ed178191"
+            ],
+            [
+                "752004da9982962d"
+            ]
+        ]
+    },
+    {
+        "id": "2bdb0f409a88fcc3",
+        "type": "function",
+        "z": "39e13ee1d7a019f5",
+        "name": "split",
+        "func": "let msg2 = RED.util.cloneMessage(msg); \nreturn [msg, msg2];",
+        "outputs": 2,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 280,
+        "wires": [
+            [
+                "61becdb2fe918b45"
+            ],
+            [
+                "82765761c13db77b"
             ]
         ]
     }
