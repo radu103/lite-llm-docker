@@ -82,7 +82,10 @@ services:
       - 1880:1880
     volumes:
       - node_red_data:/data
-      - node_red_audio:/data/unsorted
+      - node_red_unsorted_audio:/data/unsorted_audio
+      - node_red_imported_audio:/data/imported_audio
+      - node_red_unsorted_doc:/data/unsorted_doc
+      - node_red_imported_doc:/data/imported_doc
       - faster_whisper_output:/app/output
 
   # Docling for document processing
@@ -209,11 +212,29 @@ volumes:
       type: none
       device: R:/lite-llm-docker/node_red_data
       o: bind
-  node_red_audio:
+  node_red_unsorted_audio:
     driver: local
     driver_opts:
       type: none
-      device: R:/lite-llm-docker/node_red_audio
+      device: R:/lite-llm-docker/node_red_unsorted_audio
+      o: bind
+  node_red_imported_audio:
+    driver: local
+    driver_opts:
+      type: none
+      device: R:/lite-llm-docker/node_red_imported_audio
+      o: bind
+  node_red_unsorted_doc:
+    driver: local
+    driver_opts:
+      type: none
+      device: R:/lite-llm-docker/node_red_unsorted_doc
+      o: bind
+  node_red_imported_doc:
+    driver: local
+    driver_opts:
+      type: none
+      device: R:/lite-llm-docker/node_red_imported_doc
       o: bind      
   chroma_data:
     driver: local
