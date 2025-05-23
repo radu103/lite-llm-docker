@@ -185,6 +185,15 @@ services:
     #           count: all
     #           capabilities: [gpu]
 
+  crawl4ai:
+    image: unclecode/crawl4ai:latest
+    shm_size: 1g
+    networks:
+      default:
+        ipv4_address: 172.101.0.11    
+    ports:
+      - 11235:11235
+
 networks:
   default:
     ipam:
